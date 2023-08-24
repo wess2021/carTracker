@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Car Tracking System</title>
+    <style>
+        #map {
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Car Position:</h2>
+    <p>Latitude: <span id="latitude">40.7128</span></p>
+    <p>Longitude: <span id="longitude">74.0060</span></p>
+
+    <h2>Set Destination:</h2>
+    <form th:action="@{/destination}" method="post">
+        <input type="text" name="destination" placeholder="Enter destination" required>
+        <button type="submit">Set Destination</button>
+    </form>
+
+    <h2>Map:</h2>
+    <div id="map"></div>
+
+    <script>
+        function initMap() {
+            const latitude = parseFloat(document.getElementById('latitude').innerText);
+            const longitude = parseFloat(document.getElementById('longitude').innerText);
+
+            const map = L.map('map').setView([latitude, longitude], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+                maxZoom: 18,
+            }).addTo(map);
+
+            const marker = L.marker([latitude, longitude]).addTo(map).bindPopup('Car Position');
+
+            // Code to update the car's position in real time
+            // You can use websockets or AJAX to periodically update the car's position
+            // and move the marker on the map accordingly.
+        }
+    </script>
+    <script>
+        // Function to update the car's position
+        function updateCarPosition() {
+            const latitude = parseFloat(document.getElementById('latitude').innerText);
+            const longitude = parseFloat(document.getElementById('longitude').innerText);
+
+            const carPosition = {
+                latitude: latitude,
+                longitude: longitude
+            };
+
+            // Send the car position update to the server
+            fetch('/update-car-position', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(carPosition)
+            });
+        }
+
+        // Update the car's position every 5 seconds
+        setInterval(updateCarPosition, 5000);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Call the initMap function when the page has finished loading
+        window.onload = initMap;
+    </script>
+</body>
+</html>
